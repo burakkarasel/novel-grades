@@ -16,6 +16,13 @@ return new class extends Migration
 
             $table->text("review");
             $table->unsignedTinyInteger("rating");
+            // book_id definition
+            $table->uuid("book_id");
+            // referencing book_id
+            $table->foreign("book_id")
+                ->references("id")
+                ->on("books")
+                ->onDelete("cascade");
 
             $table->timestamps();
         });
