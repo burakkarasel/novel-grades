@@ -6,7 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Review;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Book extends Model
 {
@@ -17,7 +17,7 @@ class Book extends Model
         "author"
     ];
 
-    public function reviews()
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
@@ -49,7 +49,7 @@ class Book extends Model
     }
 
     // dateRangeFilter adds date filters to our query if the values are given
-    private function dateRangeFilter(Builder $query, $from = null, $to = null)
+    private function dateRangeFilter(Builder $query, $from = null, $to = null): void
     {
         if($from && !$to) {
             $query->where("created_at", ">=", $from);
@@ -58,5 +58,33 @@ class Book extends Model
         }else if($from && $to) {
             $query->whereBetween("created_at", [$from, $to]);
         }
+    }
+
+    public function scopePopularLastMonth(Builder $query): Builder
+    {
+        return $query->popular(now()->subMonth(), now())
+            ->highestRated(now()->subMonth(), now())
+            ->minReviews(2);
+    }
+
+    public function scopePopularLastSixMonths(Builder $query): Builder
+    {
+        return $query->popular(now()->subMonths(6), now())
+            ->highestRated(now()->subMonths(6), now())
+            ->minReviews(5);
+    }
+
+    public function scopeHighestRatedLastMonth(Builder $query): Builder
+    {
+        return $query->highestRated(now()->subMonth(), now())
+            ->popular(now()->subMonth(), now())
+            ->minReviews(2);
+    }
+
+    public function scopeHighestRatedLastSixMonths(Builder $query): Builder
+    {
+        return $query->highestRated(now()->subMonths(6), now())
+            ->popular(now()->subMonths(6), now())
+            ->minReviews(5);
     }
 }

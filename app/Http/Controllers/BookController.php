@@ -15,8 +15,22 @@ class BookController extends Controller
     {
         // first we get the title from request query
         $title = $request->input("title");
-        // then fetch the books if the title is given or all
-        $books = Book::when($title, fn(Builder $query, string $title) => $query->title($title))->get();
+        // get the filters from the request
+        $filter = $request->input("filter");
+        // then build a query for the books if the title is given or all
+        $books = Book::when($title, fn(Builder $query, string $title) => $query->title($title));
+
+        // here we add the filter if any given
+        $books = match ($filter) {
+            "popular_last_month" => $books->popularLastMonth(),
+            "popular_last_six_months" => $books->popularLastSixMonths(),
+            "highest_rated_last_month" => $books->highestRatedLastMonth(),
+            "highest_rated_last_six_months" => $books->highestRatedLastSixMonths(),
+            default => $books->latest()
+        };
+
+        // then we get the books we need from the db
+        $books = $books->get();
         // finally return the view
         return view("books.index", ["books" => $books]);
     }
@@ -40,9 +54,14 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Book $book)
     {
-        //
+        return view(
+            "books.show",
+            ["book" => $book->load([
+                "reviews" => fn(Builder $query) => $query->latest()
+            ])],
+        );
     }
 
     /**
@@ -50,7 +69,7 @@ class BookController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
