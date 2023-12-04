@@ -30,29 +30,13 @@ class BookController extends Controller
         };
 
         // prepare cache key for the search
-        // $cacheKey = "books:" . $filter . ":" . $title ;
+        $cacheKey = "books:" . $filter . ":" . $title ;
 
         // then we get the books we need from the db
-        // $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
-        $books = $books->get();
+        $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
+        // $books = $books->get();
         // finally return the view
         return view("books.index", ["books" => $books]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -63,7 +47,7 @@ class BookController extends Controller
         // create a cache key for the book
         $cacheKey = "book:" . $id;
         // cache the book with reviews
-        /* $book = cache()->remember(
+        $book = cache()->remember(
             $cacheKey,
             3600,
             fn() => Book::with([
@@ -71,39 +55,15 @@ class BookController extends Controller
             ])->withRatingAvg()
                 ->withReviewsCount()
                 ->findOrFail($id)
-        ); */
+        );
 
-        $book = Book::with([
+        /* $book = Book::with([
             "reviews" => fn(Builder $query) => $query->latest()
         ])
             ->withRatingAvg()
             ->withReviewsCount()
-            ->findOrFail($id);
+            ->findOrFail($id);*/
 
         return view("books.show", ["book" => $book]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
