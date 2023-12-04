@@ -7,6 +7,12 @@ use App\Models\Book;
 
 class ReviewController extends Controller
 {
+
+    public function __construct()
+    {
+        // here we specify to apply the middleware for only store method
+        $this->middleware("throttle:reviews")->only(["store"]);
+    }
     /**
      * Show the form for creating a new resource.
      */
