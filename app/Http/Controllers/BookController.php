@@ -30,10 +30,11 @@ class BookController extends Controller
         };
 
         // prepare cache key for the search
-        $cacheKey = "books:" . $filter . ":" . $title ;
+        // $cacheKey = "books:" . $filter . ":" . $title ;
 
         // then we get the books we need from the db
-        $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
+        // $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
+        $books = $books->get();
         // finally return the view
         return view("books.index", ["books" => $books]);
     }
@@ -62,7 +63,7 @@ class BookController extends Controller
         // create a cache key for the book
         $cacheKey = "book:" . $id;
         // cache the book with reviews
-        $book = cache()->remember(
+        /* $book = cache()->remember(
             $cacheKey,
             3600,
             fn() => Book::with([
@@ -70,7 +71,14 @@ class BookController extends Controller
             ])->withRatingAvg()
                 ->withReviewsCount()
                 ->findOrFail($id)
-        );
+        ); */
+
+        $book = Book::with([
+            "reviews" => fn(Builder $query) => $query->latest()
+        ])
+            ->withRatingAvg()
+            ->withReviewsCount()
+            ->findOrFail($id);
 
         return view("books.show", ["book" => $book]);
     }
